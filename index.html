@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Tipset</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+
+  <table class="table table-striped" style="width:50%; margin: 50px auto 0 auto;">
+    <thead>
+      <tr>
+        <th scope="col">Day</th>
+        <th scope="col">Teams</th>
+        <th scope="col">Result</th>
+        <th scope="col">WOO result</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+  </table>
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+  <script>
+    $.getJSON('http://worldcup.sfg.io/matches', function(data) {
+
+      data
+        .filter(match => match.home_team && match.away_team)
+        .sort((a,b) => new Date(a.datetime) - new Date(b.datetime))
+        .forEach(addRow);
+
+    });
+
+    function addRow(match) {
+      const row = buildRow(
+        1, 
+        buildTeams(match), 
+        buildResult(match),
+        buildWooResult(match),
+        buildCss(match)
+      );
+      $('#table-body').append(row);
+    }
+
+    function buildRow(day, teams, result, wooResult, css) {
+      return  $(
+      `<tr class="${css}">
+        <th scope="row">${day}</th>
+        <td>${teams}</td>
+        <td>${result}</td>
+        <td>${wooResult}</td>
+      </tr>`
+      );
+    }
+
+    function buildTeams(match) {
+      return `${match.home_team.country} - ${match.away_team.country}`
+    }
+
+    function buildResult(match) {
+      return `${match.home_team.goals} - ${match.away_team.goals}`
+    }
+
+    function buildWooResult(match) {
+      const wooResult = getWooResult(match.fifa_id);
+      return wooResult ? `${wooResult[0]} - ${wooResult[1]}` : '';
+    }
+
+    function buildCss(match) {
+      const wooResult = getWooResult(match.fifa_id);
+      if(match.status === 'completed' && wooResult) {
+        if(wooResult[0] === match.home_team.goals && wooResult[1] === match.away_team.goals) {
+          return 'table-success'
+        } else if(isWarning(wooResult, match)) {
+          return 'table-warning'
+        } else {
+          return 'table-danger';
+        }
+      } else {
+        return ''
+      }
+    }
+
+    function isWarning(wooRes, match) {
+      [wh, wa] = wooRes;
+      h = match.home_team.goals;
+      a = match.away_team.goals;
+      return wh<wa && h<a || wh===wa && h===a || wh>wa && h>a;
+    }
+
+    function getWooResult(fifaId) {
+      return WOO_RESULTS[parseInt(fifaId)];
+    }
+
+    const WOO_RESULTS = {
+      300331503: [3,0],
+      300353632: [1,2],
+      300331526: [2,2],
+      300331524: [1,2],
+      300331533: [3,0],
+      300331515: [1,1],
+      300331528: [0,1],
+      300331523: [2,0],
+      300331529: [0,1],
+      300331502: [4,1],
+      300331525: [2,1],
+      300331499: [2,1],
+      300331539: [4,1],
+      300331554: [1,2],
+      300331550: [0,1],
+      300331545: [0,0],
+      300331495: [0,0],
+      300331511: [1,0],
+      300331530: [3,0],
+      300331496: [0,2],
+      300331518: [0,0],
+      300331527: [2,0],
+      300331513: [0,0],
+      300331540: [1,1],
+      300331497: [0,1],
+      300340183: [0,1],
+      300331547: [3,0],
+      300331549: [0,1],
+      300331501: [2,0],
+      300331546: [3,0],
+      300331505: [1,1],
+      300331508: [3,2],
+      300331516: [1,0],
+      300331509: [1,1],
+      300340184: [1,1],
+      300331500: [0,3],
+      300331506: [0,1],
+      300331512: [0,1],
+      300331519: [0,2],
+      300331510: [1,2],
+      300331532: [0,3],
+      300331548: [0,0],
+      300331521: [0,2],
+      300331534: [1,0],
+      300331507: [2,2],
+      300331553: [1,1],
+      300331520: [1,0],
+      300340182: [1,1],
+    }
+
+  </script>
+</body>
+</html>
